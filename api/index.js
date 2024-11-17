@@ -258,47 +258,39 @@ app.delete("/tickets/:id", async (req, res) => {
 app.post("/ml/recommend", (req, res) => {
   const { budget } = req.body;
 
-  // Validate the budget input
   if (!budget || isNaN(budget) || Number(budget) <= 0) {
     return res
       .status(400)
       .json({ error: "Invalid or negative budget provided" });
   }
 
-  // Define the paths for the Python executable and the script
-  const pythonPath = path.join(__dirname, "..", "ML", "venv", "bin", "python3"); // Path to Python executable in the virtual environment
-  const pythonScriptPath = path.join(__dirname, "..", "ML", "run.py"); // Path to the Python script
-
-  // Spawn a Python process to run the script with the budget as an argument
+  const pythonPath = path.join(__dirname, "..", "ML", "venv", "bin", "python3");
+  const pythonScriptPath = path.join(__dirname, "..", "ML", "run.py");
   const pythonProcess = spawn(pythonPath, [pythonScriptPath, budget], {
     env: {
       ...process.env,
-      PATH: process.env.PATH, // Ensure Python binary is accessible
+      PATH: process.env.PATH,
     },
   });
 
   let output = "";
   let errorOutput = "";
 
-  // Capture standard output
   pythonProcess.stdout.on("data", (data) => {
     output += data.toString();
     console.log(`[Python stdout]: ${data}`);
   });
 
-  // Capture error output
   pythonProcess.stderr.on("data", (data) => {
     errorOutput += data.toString();
     console.error(`[Python stderr]: ${data}`);
   });
 
-  // When the Python process finishes execution
   pythonProcess.on("close", (code) => {
     if (code === 0) {
-      // Try to parse the output as JSON and send a response
       try {
         const parsedOutput = JSON.parse(output.trim());
-        res.status(200).json(parsedOutput); // Send the parsed output
+        res.status(200).json(parsedOutput);
       } catch (e) {
         console.error("[JSON Parsing Error]:", e.message, output);
         res.status(500).json({
@@ -316,7 +308,6 @@ app.post("/ml/recommend", (req, res) => {
     }
   });
 
-  // Handle errors related to spawning the Python process
   pythonProcess.on("error", (err) => {
     console.error(`[Process Error]: ${err.message}`);
     res

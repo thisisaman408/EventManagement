@@ -3,11 +3,9 @@ import sys
 import json
 import os
 
-# Get the current script directory and build the file path dynamically
 script_dir = os.path.dirname(os.path.realpath(__file__))
 file_path = os.path.join(script_dir, 'processed_with_scores.csv')
 
-# Load the CSV file
 try:
     data = pd.read_csv(file_path)
 except FileNotFoundError:
@@ -23,7 +21,7 @@ def clean_event_cost(cost):
     except ValueError:
         return 0  
 
-# Clean the 'Event Cost' column
+
 data['Event Cost'] = data['Event Cost'].apply(clean_event_cost)
 
 def get_events_within_budget(budget):
@@ -54,22 +52,20 @@ def get_events_within_budget(budget):
 
     return selected_events, total_cost
 
-# Check if the budget argument is provided when running the script
 if len(sys.argv) != 2:
     print(json.dumps({"error": "Budget not provided."}))
     sys.exit(1)
 
-# Parse the budget from the command-line argument
 try:
     budget = float(sys.argv[1])
 except ValueError:
     print(json.dumps({"error": "Invalid budget provided."}))
     sys.exit(1)
 
-# Get events within the budget
+
 events_within_budget, total_cost = get_events_within_budget(budget)
 
-# Output the events within the budget as a JSON object
+
 response = {}
 
 if events_within_budget:
